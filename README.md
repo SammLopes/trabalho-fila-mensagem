@@ -45,6 +45,8 @@ Cada serviço utiliza o swager para documentar os serviçoes voce pose acessar e
     A URL da fila pode mudar de acordo com o localstack, mas essa url aparece na linha de comando quando é enviado uma mensagem ou quando a fila não existe
     então e criado uma. 
 
+5. Caso queira reinicar o porcesso execute o CTRL + C  e o comando ``` sudo docker-compose down -v``` assim ele ira remover os containers, redes, e volumes gerados
+    pelo primeiro comando, e a flag -v irá remover os volumes associados a o containers incluindo aqueles volumes persistentes.
 
 ## Links Usados
 
