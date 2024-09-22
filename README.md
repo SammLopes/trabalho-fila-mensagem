@@ -32,13 +32,13 @@ Cada serviço utiliza o swager para documentar os serviçoes voce pose acessar e
 1. Executar esse comando ``` sudo docker-compose up --build ``` (Assim voce pode ver a execução dos tres serviçoes)
 2. Acesse a rota do M1 e execute o POST /pagar/ 
     Dessa forma: 
-    ![alt text](image-1.png)
+    ![alt text](./imgs/image-1.png)
 
     Executando o resultado será esse:
-    ![alt text](image-2.png)
+    ![alt text](./imgs/image-2.png)
 
 3. No terminal onde foi executado ``` sudo docker-compose up --build ``` verá algo desse jeito: 
-    ![alt text](image-3.png)
+    ![alt text](./imgs/image-3.png)
 
 4. Para consumir a mensagem na fila usamos esse comando: 
     ``` aws --endpoint http://localhost:4566 sqs receive-message --queue-url http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/fila-sqs ```
