@@ -24,10 +24,12 @@ Cada serviço utiliza o swager para documentar os serviçoes voce pose acessar e
 - Amazon CLI
 - Docker
 - Docker Compose
+- Spring-boot
+- Spring Cloud
 
 ## Como rodar
 
-1. Executar esse comando sudo docker-compose up --build (Assim voce pode ver a execução dos tres serviçoes)
+1. Executar esse comando ``` sudo docker-compose up --build ``` (Assim voce pode ver a execução dos tres serviçoes)
 
 ## Links Usados
 
