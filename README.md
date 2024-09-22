@@ -30,6 +30,21 @@ Cada serviço utiliza o swager para documentar os serviçoes voce pose acessar e
 ## Como rodar
 
 1. Executar esse comando ``` sudo docker-compose up --build ``` (Assim voce pode ver a execução dos tres serviçoes)
+2. Acesse a rota do M1 e execute o POST /pagar/ 
+    Dessa forma: 
+    ![alt text](image-1.png)
+
+    Executando o resultado será esse:
+    ![alt text](image-2.png)
+
+3. No terminal onde foi executado ``` sudo docker-compose up --build ``` verá algo desse jeito: 
+    ![alt text](image-3.png)
+
+4. Para consumir a mensagem na fila usamos esse comando: 
+    ``` aws --endpoint http://localhost:4566 sqs receive-message --queue-url http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/fila-sqs ```
+    A URL da fila pode mudar de acordo com o localstack, mas essa url aparece na linha de comando quando é enviado uma mensagem ou quando a fila não existe
+    então e criado uma. 
+
 
 ## Links Usados
 
@@ -41,3 +56,6 @@ Cada serviço utiliza o swager para documentar os serviçoes voce pose acessar e
 
 3 - Repositório no Github
  - https://github.com/SammLopes/trabalho-fila-mensagem.git
+
+4 - Amazon CLI instalação
+ - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
