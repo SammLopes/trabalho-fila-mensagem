@@ -4,15 +4,13 @@ RUN apt-get update
 
 RUN apt-get install -y maven  openjdk-21-jdk
 
-RUN apt-get update
-
 WORKDIR /app
 
-COPY . /app
+COPY . .
 
 RUN mvn clean install
 
-EXPOSE 8080
+EXPOSE 8081
 
-CMD ["java", "-jar", "./target/microservico1-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "./target/microservico2-0.0.1-SNAPSHOT.jar"]
 
