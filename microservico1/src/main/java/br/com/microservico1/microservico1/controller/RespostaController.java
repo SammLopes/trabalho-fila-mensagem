@@ -1,5 +1,6 @@
 package br.com.microservico1.microservico1.controller;
 
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,21 +15,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("pagar")
+@RequestMapping("/resposta")
 @RequiredArgsConstructor
-public class PagarController {
+public class RespostaController {
     
     private final RestTemplate restTemplate;
 
     @PostMapping("/")
-    public ResponseEntity<Object> pagar(@RequestBody Pagamento pagamento){
+    public ResponseEntity<Object> resposta(@RequestBody Pagamento pagamento){
 
-        String urlM2 = "http://microservice2:8081/m2/notificar/";
-        System.out.println("Teste valores de pagamento " + pagamento);
-        ResponseEntity<String> response = restTemplate.postForEntity(urlM2 ,pagamento, String.class);
-        System.out.printf("Teste endpoint pagar ", response.getBody());
-        return ResponseEntity.ok("Pagamento processado e notificação enviada: Descrição " + pagamento.getDescricao()+ " Valor " + pagamento.getValor());
+        System.out.println("Pagamento recebido: Descrição " + pagamento.toString());
+
+        return ResponseEntity.ok("Pagamento recebido: Descrição " + pagamento.getDescricao()+ " Valor " + pagamento.getValor());
 
     }
-
 }
