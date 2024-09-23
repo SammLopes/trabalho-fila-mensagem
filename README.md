@@ -20,6 +20,9 @@ Cada serviço utiliza o swager para documentar os serviçoes voce pose acessar e
 
 ```
 
+O container do microserviço2 realiza o consumo da mensagem e envia para o endpoint ``` http://localhost:8080/m1/resposta/ ``` onde a mensagem é printada no console.
+O consumo da fila é feita utilizando as anotações de agendamento de tarefa do spring-boot, @EnableScheduling na classe main e a anotação @Scheduled(fixedRate = 5000) que executa o método de consumo a cada 5 segundos. 
+
 ## Pré-requisitos
 - Amazon CLI
 - Docker
