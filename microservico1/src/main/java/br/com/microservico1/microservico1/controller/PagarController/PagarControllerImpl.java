@@ -1,4 +1,4 @@
-package br.com.microservico1.microservico1.controller;
+package br.com.microservico1.microservico1.controller.PagarController;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +14,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("pagar")
 @RequiredArgsConstructor
-public class PagarController {
+public class PagarControllerImpl implements PagarControllerSpec {
     
     private final RestTemplate restTemplate;
 
-    @PostMapping("/")
     public ResponseEntity<Object> pagar(@RequestBody Pagamento pagamento){
 
         String urlM2 = "http://microservice2:8081/m2/notificar/";
