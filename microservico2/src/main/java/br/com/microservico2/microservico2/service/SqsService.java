@@ -2,16 +2,22 @@ package br.com.microservico2.microservico2.service;
 
 import java.util.List;
 
+import org.springdoc.core.converters.models.Pageable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import br.com.microservico2.microservico2.model.Pagamento;
+import io.awspring.cloud.sqs.annotation.SqsListener;
+import io.awspring.cloud.sqs.operations.SqsTemplate;
+import jakarta.annotation.PostConstruct;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
@@ -23,78 +29,53 @@ import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class SqsService{
 
-    private final SqsClient sqsClient;
+    private final SqsTemplate sqsTemplate;
     private final ObjectMapper objectMapper; 
     private final RestTemplate restTemplate;
-    private final String nomeFila = "fila-sqs";
+
+    @Value("${sqsQueueName}")
+    private String nomeFila ;
 
     public void enviarMensagemFila(Pagamento pagamento){
-       String filaUrl ;
-       filaUrl = this.criaFilaSeExistir(nomeFila);
-       System.out.println("URL da fila criada ou caso ela exista: " + filaUrl);
         try {
-
             String menssagem = objectMapper.writeValueAsString(pagamento);
-            System.out.println("Menssagem a ser enviada " +menssagem);
-            sqsClient.sendMessage(SendMessageRequest.builder()
-                    .queueUrl(filaUrl)
-                    .messageBody(menssagem)
-                    .build());
+            log.info("Menssagem a ser enviada " +menssagem);
+            sqsTemplate.send(nomeFila, menssagem);
             
         } catch (JsonProcessingException  e) {
             e.printStackTrace();
         }
     }
-   
-    public void criarFila(String nomeFila) {
-        CreateQueueRequest createQueueRequest = CreateQueueRequest.builder()
-                .queueName(nomeFila)
-                .build();
+
+    // @SqsListener("${sqsQueueName}")
+    public void consumirMensageFila(String pagamentoJson){
+
+        log.info("Pagamento Recebido " + pagamentoJson);
+        Pagamento pagamento = this.convertJson(pagamentoJson);
+        this.processarMensagem(pagamento);
     
-        CreateQueueResponse createQueueResponse = sqsClient.createQueue(createQueueRequest);
-        System.out.println("Fila criada: " + createQueueResponse.queueUrl());
     }
 
-    @Scheduled(fixedRate = 5000)
-    public void consumirMensageFila(){
-        String filaUrl = this.criaFilaSeExistir(nomeFila);
-
-        ReceiveMessageRequest receberSolicitacaoMensagem = ReceiveMessageRequest.builder()
-                .queueUrl(filaUrl)
-                .maxNumberOfMessages(1)
-                .waitTimeSeconds(10)
-                .build();
-
-        List<Message> messagensRecebidas = sqsClient.receiveMessage(receberSolicitacaoMensagem).messages();
-        
-        System.out.printf("Messagem da Fila: %s%n" ,messagensRecebidas);
-        
-        if(messagensRecebidas.size() == 0){
-            return;
+    private Pagamento convertJson(String pagamentoJson){
+        try {
+            Pagamento pagamento = objectMapper.readValue(pagamentoJson, Pagamento.class);
+            return pagamento;
+        } catch (Exception e) {
+            log.error("Erro ao converter JSON para Pagamento: " + e.getMessage());
+            return null;
         }
-
-        this.processarMensagem(messagensRecebidas, filaUrl);
     }
 
-    private void processarMensagem(List<Message> messagensRecebidas ,String filaUrl){
-        for (Message mensagem : messagensRecebidas) {
-            try {
-                Pagamento pagamento = objectMapper.readValue(mensagem.body(), Pagamento.class);
-                System.out.println("Mensagem da fila antes de ser processada pagamento: " + pagamento.getValor() + " Valor "+pagamento.getDescricao());
-                this.enviarMensagemMricroservico1(pagamento);
-                System.out.println("Mensagem da fila depois de ser processada pagamento");
-                sqsClient.deleteMessage(DeleteMessageRequest.builder()
-                        .queueUrl(filaUrl)
-                        .receiptHandle(mensagem.receiptHandle())
-                        .build());
+    private void processarMensagem(Pagamento pagamento){
 
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        }
+         log.info("Mensagem da fila antes de ser processada pagamento: " + pagamento.getValor() + " Valor "+pagamento.getDescricao());
+         this.enviarMensagemMricroservico1(pagamento);
+         log.info("Mensagem da fila depois de ser processada pagamento");
+    
     }
 
     private void enviarMensagemMricroservico1(Pagamento pagamento){
@@ -102,32 +83,11 @@ public class SqsService{
         
         try {
            ResponseEntity<String> response = restTemplate.postForEntity(microservico1Url, pagamento, String.class);
-           System.out.println("Teste resposta "+ response.getBody());
+           log.info("Teste resposta "+ response.getBody());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    private String criaFilaSeExistir(String nomeFila){
-        String filaUrl;
-        try {
-         
-            filaUrl = this.buscarUrlFila(nomeFila);
-            System.out.println("Fila já existe -> "+ filaUrl);
-           return filaUrl;
-        } catch (QueueDoesNotExistException e) {
-
-            criarFila(nomeFila);
-            filaUrl = this.buscarUrlFila(nomeFila);
-            System.out.println("Fila não existe / fila criada -> "+ filaUrl);
-            return filaUrl;
-        }
-    }
-
-    private String buscarUrlFila(String nomeFila){
-        return sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(nomeFila).build()).queueUrl();
-    }
-
 
 }    
 
